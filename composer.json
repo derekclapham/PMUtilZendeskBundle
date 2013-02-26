@@ -1,0 +1,32 @@
+{
+  "name": "pm/util-zendesk-bundle",
+  "description": "Used for integrating with Zendesk",
+  "keywords": ["Util","zendesk","photomerchant"],
+  "homepage": "http://photomerchant.net",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Derek Clapham",
+      "email": "derek.clapham@photomerchant.net"
+    }
+  ],
+  "repositories": [
+	{
+    	"type": "vcs",
+	    "url":  "ssh://git@tools2.photomerchant.net:7999/PMV2/pmutilzendeskbundle.git"
+    }
+  ],
+  "require": {
+    "php": ">=5.3.3"
+  },
+  "autoload": {
+    "psr-0": {"PM\\Util\\ZendeskBundle": ""}
+  },
+  "minimum-stability": "dev",
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.0.x-dev"
+    }
+  }
+}
