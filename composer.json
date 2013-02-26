@@ -18,7 +18,8 @@
     }
   ],
   "require": {
-    "php": ">=5.3.3"
+    "php": ">=5.3.3",
+    "kriswallsmith/buzz": "dev-master"
   },
   "autoload": {
     "psr-0": {"PM\\Util\\ZendeskBundle": ""}
