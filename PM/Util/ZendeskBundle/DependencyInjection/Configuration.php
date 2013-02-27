@@ -24,7 +24,9 @@ class Configuration implements ConfigurationInterface
         
         return $treeBuilder->root('pm_util_zendesk')
         	->children()
+        	    ->scalarNode('api_url')->isRequired()->cannotBeEmpty()->end()
         		->scalarNode('api_key')->isRequired()->cannotBeEmpty()->end()
+        		->scalarNode('api_user')->isRequired()->cannotBeEmpty()->end()
 	        ->end()
         ->end()
         ;

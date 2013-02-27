@@ -24,5 +24,9 @@ class PMUtilZendeskExtension extends Extension
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
+        
+        $container->setParameter('zendesk.api_url', $config['api_url']);
+        $container->setParameter('zendesk.api_key', $config['api_key']);
+        $container->setParameter('zendesk.api_user', $config['api_user']);
     }
 }

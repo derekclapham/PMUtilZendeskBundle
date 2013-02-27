@@ -1,5 +1,17 @@
 imports:
     
 parameters:
-
+    zendesk.client.class: PM\Util\ZendeskBundle\Client\Client
+    zendesk.api_key: 
+    zendesk.api_user: 
+    zendesk.api_url: 
+    
 services:
+    zendesk.client:
+        class: %zendesk.client.class%
+        arguments: [ @jms_serializer, %zendesk.api_url%, %zendesk.api_key%, %zendesk.api_user% ]
+        
+    zendesk.service:
+        class: PM\Util\ZendeskBundle\Service\Core
+        arguments: [ @zendesk.client ]
+        
