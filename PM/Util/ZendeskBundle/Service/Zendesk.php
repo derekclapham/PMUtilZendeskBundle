@@ -37,9 +37,9 @@ class Zendesk
         
         try
         {
-            $result = $this->client->sendCommand(RequestInterface::METHOD_POST, "{$singularObject}s", $object);
+            $object = $this->client->sendCommand(RequestInterface::METHOD_POST, "{$singularObject}s", $object);
             
-            if(is_a($result, $class))
+            if(is_a($object, $class))
                 return $object;
         }
         catch(CommandException $ce)
