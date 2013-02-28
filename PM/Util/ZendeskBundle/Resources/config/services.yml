@@ -12,6 +12,6 @@ services:
         arguments: [ @jms_serializer, %zendesk.api_url%, %zendesk.api_key%, %zendesk.api_user% ]
         
     zendesk.service:
-        class: PM\Util\ZendeskBundle\Service\Core
+        class: PM\Util\ZendeskBundle\Service\Zendesk
         arguments: [ @zendesk.client ]
         
