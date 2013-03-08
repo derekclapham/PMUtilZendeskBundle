@@ -1,6 +1,6 @@
 <?php
 namespace PM\Util\ZendeskBundle\Service;
-
+use PM\Util\ZendeskBundle\Exception\UnprocessableEntityException;
 use PM\Util\ZendeskBundle\Exception\CommandException;
 use PM\Util\ZendeskBundle\Exception\ObjectRetrievalException;
 use PM\Util\ZendeskBundle\Exception\ObjectModificationException;
@@ -44,6 +44,10 @@ class Zendesk
         }
         catch(CommandException $ce)
         {
+            // Status: 422 Unprocessable Entity 
+            if($ce->getCode() == 422)
+                throw new UnprocessableEntityException();
+            
             throw new ObjectCreationException("The '{$singularObject}' could not be created.");
         }
     }
@@ -95,9 +99,10 @@ class Zendesk
         }
         catch(CommandException $ce)
         {
-            throw new ObjectRetrievalException("The '{$singularObject}' could not be retrieved.");
+            throw new ObjectRetrievalException("The '{$objectName}' could not be retrieved.");
         }
     }
+    
     public function set(&$object, $parameters = null)
     {
         foreach($parameters as $key => $value)
@@ -108,5 +113,17 @@ class Zendesk
         }
         
         $this->client->sendCommand(RequestInterface::METHOD_POST, "users/{$object->getId()}/{$endpoint}", $payload);
+    }
+    
+    public function query($queryString)
+    {
+        try
+        {
+            return $this->client->sendCommand(RequestInterface::METHOD_GET, 'search', 'query='.$queryString);
+        }
+        catch(Exception $e)
+        {
+            
+        }
     }
 }

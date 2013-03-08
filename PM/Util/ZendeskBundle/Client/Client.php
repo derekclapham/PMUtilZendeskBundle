@@ -93,9 +93,12 @@ class Client
      *            A string representing the API endpoint to call
      * @return Buzz\Browser $browser: An instance of a Buzz Browser object
      */
-    private function build($endpoint)
+    private function build($endpoint, $payload = null)
     {
         $this->url = 'https://' . $this->apiUrl . '/api/v2/' . $endpoint . '.json';
+        
+        if(is_string($payload))
+            $this->url .= '?'.$payload;
         
         $client = new FileGetContents();
         $browser = new Browser($client);
@@ -117,7 +120,7 @@ class Client
      */
     public function sendCommand($requestType, $endpoint, $payload = null)
     {
-        $browser = $this->build($endpoint);
+        $browser = $this->build($endpoint, $payload);
         
         switch($requestType)
         {
@@ -149,6 +152,13 @@ class Client
             }
             else
                 return true;
+        }
+        else
+        {
+            $result = $this->_unSerializePayload($response->getContent());
+            
+            if(array_key_exists('error', $result))
+                throw new CommandException($result['description'], $response->getStatusCode());
         }
         
         throw new CommandException("There was an error while sending the command");
