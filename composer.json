@@ -14,7 +14,7 @@
   "require": {
     "php": ">=5.3.3",
     "kriswallsmith/buzz": "dev-master",
-    "jms/serializer-bundle": "0.12.0"
+    "jms/serializer-bundle": "dev-master"
   },
   "autoload": {
     "psr-0": {"PM\\Util\\ZendeskBundle": ""}
