@@ -247,7 +247,7 @@ class User
 
     public function __construct()
     {
-        
+        $this->role = "end-user";
     }
     
 	/**
