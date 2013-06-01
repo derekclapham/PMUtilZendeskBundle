@@ -5,10 +5,10 @@ use PM\Util\ZendeskBundle\Util\Util;
 use PM\Util\ZendeskBundle\Exception\CommandException;
 use PM\Util\ZendeskBundle\Exception\ObjectModificationException;
 use PM\Util\ZendeskBundle\Exception\ObjectCreationException;
+use Buzz\Message\Response;
+use Buzz\Message\Request;
+use Buzz\Client\Curl;
 use Buzz\Message\RequestInterface;
-use Buzz\Listener\BasicAuthListener;
-use Buzz\Browser;
-use Buzz\Client\FileGetContents;
 use JMS\Serializer\Serializer;
 
 /**
@@ -25,7 +25,8 @@ class Client
     private $apiUrl;
     private $apiKey;
     private $apiUser;
-    private $url;
+    private $resource;
+    
     public function __construct(Serializer $serializer, $apiUrl, $apiKey, $apiUser)
     {
         $this->serializer = $serializer;
@@ -33,7 +34,7 @@ class Client
         $this->apiKey = $apiKey;
         $this->apiUser = $apiUser;
         
-        $this->url = null;
+        $this->resource = null;
     }
     
     /**
@@ -87,24 +88,30 @@ class Client
     }
     
     /**
-     * Builds a Buzz\Browser object to be used in performing an API request
+     * Builds a Buzz\Curl object to be used in performing an API request
      * 
      * @param string: $endpoint
      *            A string representing the API endpoint to call
-     * @return Buzz\Browser $browser: An instance of a Buzz Browser object
+     * @return Buzz\Client\Curl $client: An instance of a Buzz Curl object
      */
     private function build($endpoint, $payload = null)
     {
-        $this->url = 'https://' . $this->apiUrl . '/api/v2/' . $endpoint . '.json';
+        $this->resource = '/api/v2/' . $endpoint . '.json';
         
         if(is_string($payload))
-            $this->url .= '?'.$payload;
+            $this->resource .= '?'.$payload;
         
-        $client = new FileGetContents();
-        $browser = new Browser($client);
-        $browser->addListener(new BasicAuthListener($this->apiUser, $this->apiKey));
+        $response = new Response();
+        $request = new Request(null, $this->resource, 'https://'.$this->apiUrl);
+        $request->addHeader("Content-Type: application/json");
+
+        $client = new Curl();
+        $client->setMaxRedirects(10);
+        $client->setTimeout(10);
+        $client->setOption(CURLOPT_USERPWD, $this->apiUser.':'.$this->apiKey);
+        $client->setOption(CURLOPT_RETURNTRANSFER, true);
         
-        return $browser;
+        return [$client, $request, $response];
     }
     
     /**
@@ -120,20 +127,25 @@ class Client
      */
     public function sendCommand($requestType, $endpoint, $payload = null)
     {
-        $browser = $this->build($endpoint, $payload);
+        list($client, $request, $response) = $this->build($endpoint, $payload);
         
         switch($requestType)
         {
             case RequestInterface::METHOD_POST :
-                $response = $browser->post($this->url, self::$HEADER_ARRAY, $this->_serializePayload($payload));
+                $request->setMethod(RequestInterface::METHOD_POST);
+                $client->setOption(CURLOPT_POSTFIELDS, $this->_serializePayload($payload));
+                $client->send($request, $response);
                 break;
             
             case RequestInterface::METHOD_PUT :
-                $response = $browser->put($this->url, self::$HEADER_ARRAY, $this->_serializePayload($payload));
+                $request->setMethod(RequestInterface::METHOD_PUT);
+                $client->setOption(CURLOPT_POSTFIELDS, $this->_serializePayload($payload));
+                $client->send($request, $response);
                 break;
             
             case RequestInterface::METHOD_GET :
-                $response = $browser->get($this->url, self::$HEADER_ARRAY);
+                $request->setMethod(RequestInterface::METHOD_GET);
+                $client->send($request, $response);
                 break;
             
             default :
@@ -158,7 +170,12 @@ class Client
             $result = $this->_unSerializePayload($response->getContent());
             
             if(array_key_exists('error', $result))
-                throw new CommandException($result['description'], $response->getStatusCode());
+            {
+                if(array_key_exists('description', $result))
+                    throw new CommandException($result['description'], $response->getStatusCode());
+                
+                throw new CommandException($result['error'], $response->getStatusCode());
+            }
         }
         
         throw new CommandException("There was an error while sending the command");
