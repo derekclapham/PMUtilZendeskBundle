@@ -72,7 +72,7 @@ class Zendesk
         }
         catch(CommandException $ce)
         {
-            throw new ObjectModificationException("The '{$singularObject}' could not be modified.");
+            throw new ObjectModificationException("The '{$singularObject}' could not be modified. The error was: {$ce->getMessage()}");
         }
     }
     
