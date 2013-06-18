@@ -169,13 +169,16 @@ class Client
         {
             $result = $this->_unSerializePayload($response->getContent());
             
-            if(array_key_exists('error', $result))
+            // Check first if we actually have a deserialized response payload as this has been found to fail with result being null
+            if($result && is_array($result) && array_key_exists('error', $result))
             {
                 if(array_key_exists('description', $result))
                     throw new CommandException($result['description'], $response->getStatusCode());
                 
                 throw new CommandException($result['error'], $response->getStatusCode());
             }
+            
+            throw new CommandException("There was an error while sending the command, the response content recieved invalid and could not be deserialized: " . ($response && $response->getContent() ? $response->getContent() : "null"));
         }
         
         throw new CommandException("There was an error while sending the command");
